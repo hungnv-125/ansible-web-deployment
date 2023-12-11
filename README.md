@@ -41,7 +41,7 @@ This project demonstrates the deployment of a Node.js web application using Ansi
 
 
 ## Configuration
-All configuration of project are locate in /inventories/main.yml
+All configuration of project are located in /inventories/main.yml
 
 
 ## Usage
