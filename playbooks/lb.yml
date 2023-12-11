@@ -1,0 +1,52 @@
+---
+- name: Install Load Balancing
+  hosts: lbserver
+  become: true
+  gather_facts: false
+  tasks: 
+    - name: Update packages
+      ansible.builtin.apt:
+        update_cache: yes  
+
+    - name: Install Nginx
+      ansible.builtin.apt:
+        name: nginx
+        state: present
+
+    - name: Copy file configure load balancer of web to remote host
+      template:
+        src: ../templates/default.j2
+        dest: /etc/nginx/sites-available/default
+      notify: restart nginx
+
+    - name: Check ssl cert is already register
+      stat:
+        path: /etc/ssl/lb.key
+      register: ssl_register
+
+    - name: generate openssl private keys
+      openssl_privatekey:
+        path: /etc/ssl/lb.key
+        size: 2048
+      when: not ssl_register.stat.exists
+
+    - name: generate openssl certficate signing requests
+      openssl_csr:
+        path: /etc/ssl/lb.csr
+        privatekey_path: /etc/ssl/lb.key
+      when: not ssl_register.stat.exists
+      
+    - name: generate openssl certficate
+      openssl_certificate:
+        provider: selfsigned
+        path: /etc/ssl/lb.crt
+        privatekey_path: /etc/ssl/lb.key
+        csr_path: /etc/ssl/lb.csr
+      when: not ssl_register.stat.exists
+      
+  handlers:
+    - name: restart nginx
+      ansible.builtin.service:
+        name: nginx
+        state: restarted
+  

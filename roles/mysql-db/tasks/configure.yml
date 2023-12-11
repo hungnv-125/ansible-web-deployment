@@ -1,0 +1,41 @@
+---
+- name: Copy my.cnf global MySQL configuration.
+  ansible.builtin.template:
+    src: mysqld.cnf.j2
+    dest: /etc/mysql/mysql.conf.d/mysqld.cnf
+    owner: root
+    group: root
+    mode: 0644
+    force: true
+  notify: restart mysql
+
+
+- name: Create webapp database
+  community.mysql.mysql_db:
+    name: "{{database_name}}"
+    state: present
+
+
+- name: Sync database dump file
+  synchronize:
+    src: "{{database_dump_src_file}}"
+    dest: "{{database_dump_dest_path}}"
+
+- name: Import database
+  mysql_db:
+    name: "{{database_name}}"
+    state: import
+    target: "{{database_dump_dest_path}}/{{database_dump_src_file}}"
+  ignore_errors: True
+
+- name: Create webapp user
+  community.mysql.mysql_user:
+    name: "{{ database_user }}"
+    password: "{{database_password}}"
+    priv: '{{database_name}}.*:ALL,GRANT'
+    host: "%"
+    state: present
+
+
+
+

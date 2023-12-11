@@ -1,0 +1,50 @@
+all:
+  hosts:
+    dbserver:
+    # IP of database host
+      ansible_host: 192.168.33.11
+    webserver1:
+    # IP of webserver 1 host
+      ansible_host: 192.168.33.12
+    webserver2:
+    # IP of webserver 2 host
+      ansible_host: 192.168.33.13
+    lbserver:
+    # IP of load balanner host
+      ansible_host: 192.168.33.10
+  children:
+    webservergrp:
+    dbservergrp:
+  vars:
+  # user perform task in all hosts
+    ansible_user: vagrant
+
+  # path to storage source code in web host
+    source_code_path: /home/vagrant
+
+  # database configuration
+    database_user: webuser
+    database_password: 123456
+    database_port: 3306
+    database_host: 192.168.33.11
+    database_name: todo-list
+  # path to storage database backup file in database host
+    database_dump_dest_path: /tmp
+  # path database backup file in ansible management host (./roles/mysql-db/file)
+    database_dump_src_file: todolist.sql
+
+  # web configuration
+    web_port: 7000
+    web_service_name: todolist
+    web_hostname: 0.0.0.0
+
+webservergrp:
+  hosts:
+    webserver1:
+    webserver2:
+
+dbservergrp:
+  hosts:
+    dbserver:
+
+

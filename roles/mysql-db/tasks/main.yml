@@ -1,0 +1,6 @@
+---
+
+- ansible.builtin.include_tasks: ubuntu.yml
+  when: ansible_os_family == 'Debian'
+
+- ansible.builtin.include_tasks: configure.yml

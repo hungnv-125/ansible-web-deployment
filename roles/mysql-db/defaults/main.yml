@@ -1,0 +1,13 @@
+---
+# Default username and password of webapp database user
+database_user: web_user
+database_password: 123456
+
+database_name: webdb
+database_dump_dest_path: /tmp
+database_dump_src_file: todolist.sql
+
+# MySQL connection settings.
+database_port: "3306"
+mysql_bind_address: '0.0.0.0'
+

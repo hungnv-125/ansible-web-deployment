@@ -1,0 +1,60 @@
+---
+- name: Install webserver
+  hosts: webservergrp
+  become: true
+  gather_facts: false
+
+  tasks:
+    - name: Update package on CentOS
+      yum:
+        update_cache: yes
+      
+    - name: Install GCC
+      ansible.builtin.command: sudo yum install -y gcc-c++ make
+
+    - name: Install nodejs
+      yum:
+        name: nodejs
+        state: present
+
+    - name: Install npm
+      yum:
+        name: npm
+        state: present
+
+    - name: Install pm2
+      ansible.builtin.command: npm install pm2 -g
+
+
+    - name: Synchronize resource code with remove host
+      synchronize:
+        src: ../files/code/todo-list
+        dest: "{{source_code_path}}"
+        
+
+    - name: Copy env of web to remote host
+      template:
+        src: ../templates/.env.j2
+        dest: "{{source_code_path}}/todo-list/.env"
+
+    - name: Install all dependency packages
+      ansible.builtin.command: npm install
+      args:
+        chdir: "{{source_code_path}}/todo-list"
+
+    - name: Stop pm2 web processes
+      ansible.builtin.command: " pm2 stop {{ web_service_name }}"
+      become: False
+      ignore_errors: True
+
+    - name: Start pm2 web processes
+      ansible.builtin.command: "pm2 start --name {{ web_service_name }} {{source_code_path}}/todo-list/server.js"
+      become: False
+      args:
+        chdir: "{{source_code_path}}/todo-list"
+
+    - name: Enable firewall for web
+      ansible.posix.firewalld:
+        port: "{{web_port}}/tcp"
+        permanent: true
+        state: enabled

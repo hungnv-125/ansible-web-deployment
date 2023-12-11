@@ -1,0 +1,33 @@
+upstream backend {
+    server {{hostvars.webserver1.ansible_host}}:{{web_port}};
+    server {{hostvars.webserver2.ansible_host}}:{{web_port}};
+    }
+
+server {
+        listen 80;
+        listen [::]:80;
+
+
+        server_name _;
+                return 301 https://$host$request_uri;
+
+}
+
+server {
+        listen 443 ssl;
+        listen [::]:443 ssl;
+
+
+        server_name _;
+
+        ssl_certificate /etc/ssl/lb.crt;
+        ssl_certificate_key /etc/ssl/lb.key;
+
+        location / {
+            proxy_pass http://backend;
+            proxy_set_header Host $host;
+            proxy_set_header X-Real-IP $remote_addr;
+        }
+}
+
+

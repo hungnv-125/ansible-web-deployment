@@ -1,0 +1,12 @@
+---
+- name: Install Mysql and configure database
+  hosts: dbservergrp
+  become: true
+  roles:
+    - mysql-db
+
+- name: Install web
+  ansible.builtin.import_playbook: playbooks/web.yml
+
+- name: Install load balancer
+  ansible.builtin.import_playbook: playbooks/lb.yml

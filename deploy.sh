@@ -1,0 +1,1 @@
+ansible-playbook -i inventories/main.yml main.yml
